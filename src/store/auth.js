@@ -69,7 +69,7 @@ export default {
       localStorage.setItem('token', response.data.idToken);
       localStorage.setItem('expirationDate', expirationDate);
       localStorage.setItem('userId', response.data.localId);
-      dispatch.auth.authSuccess(response.data.idToken, response.data.localId);
+      dispatch.auth.authSuccess({ idToken: response.data.idToken, userId: response.data.localId });
       dispatch.auth.checkAuthTimeout(response.data.expiresIn);
     } catch (err) {
       dispatch.auth.authFail(err.response.data.error);
@@ -84,7 +84,7 @@ export default {
       const expirationDate = new Date(localStorage.getItem('expirationDate'));
       if (expirationDate > new Date()) {
         const userId = localStorage.getItem('userId');
-        dispatch.auth.authSuccess(token, userId);
+        dispatch.auth.authSuccess({ idToken: token, userId });
         dispatch.auth.checkAuthTimeout((expirationDate.getTime() - new Date().getTime()) / 1000);
       } else {
         dispatch.auth.logout();

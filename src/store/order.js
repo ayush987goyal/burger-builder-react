@@ -48,7 +48,7 @@ export default {
           id: key
         });
       }
-      dispatch.order.fetchOrderSuccess(fetchedOrders);
+      dispatch.order.fetchOrdersSuccess(fetchedOrders);
     } catch (error) {
       dispatch.order.setLoading(false);
     }

@@ -72,7 +72,11 @@ const Auth = () => {
 
   const submithandler = event => {
     event.preventDefault();
-    onAuth(state.controls.email.value, state.controls.password.value, state.isSignup);
+    onAuth({
+      email: state.controls.email.value,
+      password: state.controls.password.value,
+      isSignup: state.isSignup
+    });
   };
 
   const switchAuthModeHandler = () => {
