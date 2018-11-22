@@ -1,5 +1,5 @@
 import { effect } from 'easy-peasy';
-import axios from '../../axios-orders';
+import axios from '../axios-orders';
 
 export default {
   orders: [],

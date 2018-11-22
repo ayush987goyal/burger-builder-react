@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useStore, useAction } from 'easy-peasy';
 import axios from '../../axios-orders';
 
 import Burger from '../../components/Burger/Burger';
@@ -8,110 +8,98 @@ import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 import Spinner from '../../components/UI/Spinner/Spinner';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
-import * as actions from '../../store/actions/index';
 
+const BurgerBuilder = props => {
+  const [purchasing, setPurchasing] = useState(false);
+  const ings = useStore(state => state.burgerBuilder.ingredients);
+  const price = useStore(state => state.burgerBuilder.totalPrice);
+  const error = useStore(state => state.burgerBuilder.error);
+  const isAuthenticated = useStore(state => state.auth.token !== null);
 
-class BurgerBuilder extends Component {
-    state = {
-        purchasing: false
-    };
+  const initIngredients = useAction(actions => actions.burgerBuilder.initIngredients);
+  const onIngredientAdded = useAction(actions => actions.burgerBuilder.addIngredient);
+  const onIngredientRemoved = useAction(actions => actions.burgerBuilder.removeIngredient);
+  const onInitPurchase = useAction(actions => actions.order.purchaseInit);
+  const onSetAuthRedirectPath = useAction(actions => actions.auth.setAuthRedirectPath);
 
-    componentDidMount() {
-        this.props.onInitIngredients();
+  useEffect(() => {
+    initIngredients();
+  });
+
+  const updatePurchaseState = ingredients => {
+    const sum = Object.keys(ingredients)
+      .map(igKey => {
+        return ingredients[igKey];
+      })
+      .reduce((sum, el) => {
+        return sum + el;
+      }, 0);
+
+    return sum > 0;
+  };
+
+  const purchaseHandler = () => {
+    if (isAuthenticated) {
+      setPurchasing(true);
+    } else {
+      onSetAuthRedirectPath('/checkout');
+      props.history.push('/auth');
     }
+  };
 
-    updatePurchaseState = (ingredients) => {
-        const sum = Object.keys(ingredients)
-            .map(igKey => {
-                return ingredients[igKey];
-            })
-            .reduce((sum, el) => {
-                return sum + el;
-            }, 0);
+  const purchaseCancelHandler = () => {
+    setPurchasing(false);
+  };
 
-        return sum > 0;
-    }
+  const purchaseContinueHandler = () => {
+    onInitPurchase();
+    props.history.push('/checkout');
+  };
 
-    purchaseHandler = () => {
-        if (this.props.isAuthenticated) {
-            this.setState({purchasing: true});
-        } else {
-            this.props.onSetAuthRedirectPath('/checkout');
-            this.props.history.push('/auth');
-        }
-    }
+  const disabledInfo = {
+    ...ings
+  };
+  for (let key in disabledInfo) {
+    disabledInfo[key] = disabledInfo[key] <= 0;
+  }
 
-    purchaseCancelHandler = () => {
-        this.setState({purchasing: false});
-    }
+  let orderSummary = null;
+  let burger = error ? <p>Ingredients can't be loaded</p> : <Spinner />;
 
-    purchaseContinueHandler = () => {
-        this.props.onInitPurchase();
-        this.props.history.push('/checkout');
-    }
+  if (ings) {
+    burger = (
+      <>
+        <Burger ingredients={ings} />
+        <BuildControls
+          price={price}
+          ingredientAdded={onIngredientAdded}
+          ingredientRemoved={onIngredientRemoved}
+          disabled={disabledInfo}
+          purchaseable={updatePurchaseState(ings)}
+          isAuth={isAuthenticated}
+          ordered={purchaseHandler}
+        />
+      </>
+    );
 
-    render() {
-        const disabledInfo = {
-            ...this.props.ings
-        };
-        for (let key in disabledInfo) {
-            disabledInfo[key] = disabledInfo[key] <= 0;
-        }
+    orderSummary = (
+      <OrderSummary
+        ingredients={ings}
+        price={price}
+        purchaseCancelled={purchaseCancelHandler}
+        purchaseContinued={purchaseContinueHandler}
+      />
+    );
+  }
 
-        let orderSummary = null;
-        let burger = this.props.error ? <p>Ingredients can't be loaded</p> : <Spinner />;
-
-        if(this.props.ings) {
-            
-            burger = (
-                <Fragment>
-                    <Burger ingredients={this.props.ings}/>
-                    <BuildControls
-                        price={this.props.price}
-                        ingredientAdded={this.props.onIngredientAdded}
-                        ingredientRemoved={this.props.onIngredientRemoved}
-                        disabled={disabledInfo}
-                        purchaseable={this.updatePurchaseState(this.props.ings)}
-                        isAuth={this.props.isAuthenticated}
-                        ordered={this.purchaseHandler} />
-                </Fragment>
-            );
-
-            orderSummary = <OrderSummary 
-                                ingredients={this.props.ings}
-                                price={this.props.price}
-                                purchaseCancelled={this.purchaseCancelHandler}
-                                purchaseContinued={this.purchaseContinueHandler}/>;
-        }
-
-        return (
-            <Fragment>
-                <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
-                    {orderSummary}
-                </Modal>
-                {burger}
-            </Fragment>
-        );
-    }
+  return (
+    <>
+      <Modal show={purchasing} modalClosed={purchaseCancelHandler}>
+        {orderSummary}
+      </Modal>
+      {burger}
+    </>
+  );
 };
 
-const mapStateToProps = state => {
-    return {
-        ings: state.burgerBuilder.ingredients,
-        price: state.burgerBuilder.totalPrice,
-        error: state.burgerBuilder.error,
-        isAuthenticated: state.auth.token !== null
-    };
-};
-
-const mapDispatchToProps = dispatch => {
-    return {
-        onIngredientAdded: (ingName) => dispatch(actions.addIngredient(ingName)),
-        onIngredientRemoved: (ingName) => dispatch(actions.removeIngredient(ingName)),
-        onInitIngredients: () => dispatch(actions.initIngredients()),
-        onInitPurchase: () => dispatch(actions.purchaseInit()),
-        onSetAuthRedirectPath: (path) => dispatch(actions.setAuthRedirectPath(path))
-    }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandler(BurgerBuilder, axios));
+export default withErrorHandler(BurgerBuilder, axios);

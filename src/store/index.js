@@ -1,9 +1,10 @@
 import { createStore } from 'easy-peasy';
 
+import burgerBuilderState from './burgerBuilder';
 import orderState from './order';
 
 const store = createStore({
-  burgerBuilder: null,
+  burgerBuilder: burgerBuilderState,
   order: orderState,
   auth: null
 });
