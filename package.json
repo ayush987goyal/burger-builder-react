@@ -5,6 +5,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "easy-peasy": "^1.6.1",
+    "prop-types": "^15.6.2",
     "react": "^16.7.0-alpha.2",
     "react-dom": "^16.7.0-alpha.2",
     "react-router-dom": "^4.3.1",
