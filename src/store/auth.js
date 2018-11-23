@@ -7,6 +7,7 @@ export default {
   error: null,
   loading: false,
   authRedirectPath: '/',
+  sessionTimeout: null,
   // actions
   authStart: state => {
     state.loading = true;
@@ -28,10 +29,18 @@ export default {
   authLogout: state => {
     state.token = null;
     state.userId = null;
+    clearTimeout(state.sessionTimeout);
   },
 
   setAuthRedirectPath: (state, path) => {
     state.authRedirectPath = path;
+  },
+
+  setSessionTimeout: (state, payload) => {
+    if (state.sessionTimeout) {
+      clearTimeout(state.sessionTimeout);
+    }
+    state.sessionTimeout = payload;
   },
 
   logout: effect(dispatch => {
@@ -42,22 +51,23 @@ export default {
   }),
 
   checkAuthTimeout: effect((dispatch, payload) => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       dispatch.auth.logout();
     }, payload * 1000);
+    dispatch.auth.setSessionTimeout(timeout);
   }),
 
-  authUser: effect(async (dispatch, payload) => {
+  authUser: effect(async (dispatch, { email, password, isSignup }) => {
     dispatch.auth.authStart();
 
     const authData = {
-      email: payload.email,
-      password: payload.password,
+      email: email,
+      password: password,
       returnSecureToken: true
     };
     let url =
       'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyCqSZr6RibUy5-fBM0YvGo4g-YxvhLo7-4';
-    if (!payload.isSignup) {
+    if (!isSignup) {
       url =
         'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyCqSZr6RibUy5-fBM0YvGo4g-YxvhLo7-4';
     }
