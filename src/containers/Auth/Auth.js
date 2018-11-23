@@ -13,8 +13,9 @@ const Auth = () => {
   const isAuthenticated = useStore(state => state.auth.token !== null);
   const buildingBurger = useStore(state => state.burgerBuilder.building);
 
-  const onAuth = useAction(actions => actions.auth.authUser);
-  const onSetAuthRedirectPath = useAction(actions => actions.auth.setAuthRedirectPath);
+  const { authUser: onAuth, setAuthRedirectPath: onSetAuthRedirectPath } = useAction(
+    actions => actions.auth
+  );
 
   useEffect(
     () => {

@@ -11,14 +11,14 @@ import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 
 const BurgerBuilder = props => {
   const [purchasing, setPurchasing] = useState(false);
-  const ings = useStore(state => state.burgerBuilder.ingredients);
-  const price = useStore(state => state.burgerBuilder.totalPrice);
-  const error = useStore(state => state.burgerBuilder.error);
+  const { ingredients: ings, totalPrice: price, error } = useStore(state => state.burgerBuilder);
   const isAuthenticated = useStore(state => state.auth.token !== null);
 
-  const initIngredients = useAction(actions => actions.burgerBuilder.initIngredients);
-  const onIngredientAdded = useAction(actions => actions.burgerBuilder.addIngredient);
-  const onIngredientRemoved = useAction(actions => actions.burgerBuilder.removeIngredient);
+  const {
+    initIngredients,
+    addIngredient: onIngredientAdded,
+    removeIngredient: onIngredientRemoved
+  } = useAction(actions => actions.burgerBuilder);
   const onInitPurchase = useAction(actions => actions.order.purchaseInit);
   const onSetAuthRedirectPath = useAction(actions => actions.auth.setAuthRedirectPath);
 

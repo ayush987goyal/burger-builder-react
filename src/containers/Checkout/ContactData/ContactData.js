@@ -10,11 +10,11 @@ import withErrorHandler from './../../../hoc/withErrorHandler/withErrorHandler';
 import { updateObject, checkValidity } from '../../../shared/utility';
 
 const ContactData = props => {
-  const ings = useStore(state => state.burgerBuilder.ingredients);
-  const price = useStore(state => state.burgerBuilder.totalPrice);
+  const { ingredients: ings, totalPrice: price } = useStore(
+    state => state.burgerBuilder.ingredients
+  );
   const loading = useStore(state => state.order.loading);
-  const token = useStore(state => state.auth.token);
-  const userId = useStore(state => state.auth.userId);
+  const { token, userId } = useStore(state => state.auth);
 
   const onOrderBurger = useAction(actions => actions.order.purchaseBurger);
 
