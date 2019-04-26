@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { useStore, useAction } from 'easy-peasy';
+import { useStore, useActions } from 'easy-peasy';
 import { Route, Switch, withRouter, Redirect } from 'react-router-dom';
 
 import Layout from './hoc/Layout/Layout';
@@ -15,11 +15,11 @@ const asyncAuth = lazy(() => import('./containers/Auth/Auth'));
 
 const App = () => {
   const isAuthenticated = useStore(state => state.auth.token !== null);
-  const onTryAutoSignup = useAction(actions => actions.auth.authCheckState);
+  const onTryAutoSignup = useActions(actions => actions.auth.authCheckState);
 
   useEffect(() => {
     onTryAutoSignup();
-  }, []);
+  }, [onTryAutoSignup]);
 
   let routes = (
     <Switch>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useStore, useAction } from 'easy-peasy';
+import { useStore, useActions } from 'easy-peasy';
 import axios from '../../axios-orders';
 
 import Burger from '../../components/Burger/Burger';
@@ -18,13 +18,13 @@ const BurgerBuilder = props => {
     initIngredients,
     addIngredient: onIngredientAdded,
     removeIngredient: onIngredientRemoved
-  } = useAction(actions => actions.burgerBuilder);
-  const onInitPurchase = useAction(actions => actions.order.purchaseInit);
-  const onSetAuthRedirectPath = useAction(actions => actions.auth.setAuthRedirectPath);
+  } = useActions(actions => actions.burgerBuilder);
+  const onInitPurchase = useActions(actions => actions.order.purchaseInit);
+  const onSetAuthRedirectPath = useActions(actions => actions.auth.setAuthRedirectPath);
 
   useEffect(() => {
     initIngredients();
-  }, []);
+  }, [initIngredients]);
 
   const updatePurchaseState = ingredients => {
     const sum = Object.keys(ingredients)

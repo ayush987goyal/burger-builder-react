@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useStore, useAction } from 'easy-peasy';
+import { useStore, useActions } from 'easy-peasy';
 import axios from '../../axios-orders';
 
 import Order from './../../components/Order/Order';
@@ -9,14 +9,11 @@ import Spinner from '../../components/UI/Spinner/Spinner';
 const Orders = () => {
   const { orders, loading } = useStore(state => state.order);
   const { token, userId } = useStore(state => state.auth);
-  const fetchOrders = useAction(actions => actions.order.fetchOrders);
+  const fetchOrders = useActions(actions => actions.order.fetchOrders);
 
-  useEffect(
-    () => {
-      fetchOrders({ token, userId });
-    },
-    [token, userId]
-  );
+  useEffect(() => {
+    fetchOrders({ token, userId });
+  }, [token, userId, fetchOrders]);
 
   let ordersRender = <Spinner />;
   if (!loading) {

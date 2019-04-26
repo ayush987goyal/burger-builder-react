@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useStore, useAction } from 'easy-peasy';
+import { useStore, useActions } from 'easy-peasy';
 import { Redirect } from 'react-router-dom';
 
 import Input from '../../components/UI/Input/Input';
@@ -13,18 +13,15 @@ const Auth = () => {
   const isAuthenticated = useStore(state => state.auth.token !== null);
   const buildingBurger = useStore(state => state.burgerBuilder.building);
 
-  const { authUser: onAuth, setAuthRedirectPath: onSetAuthRedirectPath } = useAction(
+  const { authUser: onAuth, setAuthRedirectPath: onSetAuthRedirectPath } = useActions(
     actions => actions.auth
   );
 
-  useEffect(
-    () => {
-      if (!buildingBurger && authRedirectPath !== '/') {
-        onSetAuthRedirectPath();
-      }
-    },
-    [buildingBurger, authRedirectPath]
-  );
+  useEffect(() => {
+    if (!buildingBurger && authRedirectPath !== '/') {
+      onSetAuthRedirectPath();
+    }
+  }, [buildingBurger, authRedirectPath, onSetAuthRedirectPath]);
 
   const [state, setState] = useState({
     controls: {

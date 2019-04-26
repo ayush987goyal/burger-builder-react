@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStore, useAction } from 'easy-peasy';
+import { useStore, useActions } from 'easy-peasy';
 import axios from '../../../axios-orders';
 
 import Button from '../../../components/UI/Button/Button';
@@ -10,13 +10,11 @@ import withErrorHandler from './../../../hoc/withErrorHandler/withErrorHandler';
 import { updateObject, checkValidity } from '../../../shared/utility';
 
 const ContactData = props => {
-  const { ingredients: ings, totalPrice: price } = useStore(
-    state => state.burgerBuilder.ingredients
-  );
+  const { ingredients: ings, totalPrice: price } = useStore(state => state.burgerBuilder);
   const loading = useStore(state => state.order.loading);
   const { token, userId } = useStore(state => state.auth);
 
-  const onOrderBurger = useAction(actions => actions.order.purchaseBurger);
+  const onOrderBurger = useActions(actions => actions.order.purchaseBurger);
 
   const [state, setState] = useState({
     orderForm: {

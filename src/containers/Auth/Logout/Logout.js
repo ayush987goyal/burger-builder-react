@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
-import { useAction } from 'easy-peasy';
+import { useActions } from 'easy-peasy';
 import { Redirect } from 'react-router-dom';
 
 const Logout = () => {
-  const onLogout = useAction(actions => actions.auth.logout);
+  const onLogout = useActions(actions => actions.auth.logout);
 
   useEffect(() => {
     onLogout();
-  }, []);
+  }, [onLogout]);
 
   return <Redirect to="/" />;
 };
