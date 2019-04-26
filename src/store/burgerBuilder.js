@@ -1,4 +1,4 @@
-import { effect } from 'easy-peasy';
+import { action, thunk } from 'easy-peasy';
 import axios from '../axios-orders';
 
 const INGREDIENT_PRICES = {
@@ -14,41 +14,41 @@ export default {
   error: false,
   building: true,
   // actions
-  addIngredient: (state, ingredientName) => {
+  addIngredient: action((state, ingredientName) => {
     state.ingredients = {
       ...state.ingredients,
       [ingredientName]: state.ingredients[ingredientName] + 1
     };
     state.totalPrice += INGREDIENT_PRICES[ingredientName];
     state.building = true;
-  },
+  }),
 
-  removeIngredient: (state, ingredientName) => {
+  removeIngredient: action((state, ingredientName) => {
     state.ingredients = {
       ...state.ingredients,
       [ingredientName]: state.ingredients[ingredientName] - 1
     };
     state.totalPrice -= INGREDIENT_PRICES[ingredientName];
     state.building = true;
-  },
+  }),
 
-  setIngredients: (state, ingredients) => {
+  setIngredients: action((state, ingredients) => {
     state.ingredients = ingredients;
     state.totalPrice = 4;
     state.error = false;
     state.building = false;
-  },
+  }),
 
-  fetchIngredientsFailed: state => {
+  fetchIngredientsFailed: action(state => {
     state.error = true;
-  },
+  }),
 
-  initIngredients: effect(async dispatch => {
+  initIngredients: thunk(async actions => {
     try {
       const response = await axios.get('/ingredients.json');
-      dispatch.burgerBuilder.setIngredients(response.data);
+      actions.setIngredients(response.data);
     } catch (error) {
-      dispatch.burgerBuilder.fetchIngredientsFailed();
+      actions.fetchIngredientsFailed();
     }
   })
 };

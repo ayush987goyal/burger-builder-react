@@ -1,4 +1,4 @@
-import { effect } from 'easy-peasy';
+import { action, thunk } from 'easy-peasy';
 import axios from '../axios-orders';
 
 export default {
@@ -9,56 +9,56 @@ export default {
   authRedirectPath: '/',
   sessionTimeout: null,
   // actions
-  authStart: state => {
+  authStart: action(state => {
     state.loading = true;
     state.error = null;
-  },
+  }),
 
-  authSuccess: (state, { idToken, userId }) => {
+  authSuccess: action((state, { idToken, userId }) => {
     state.token = idToken;
     state.userId = userId;
     state.error = null;
     state.loading = false;
-  },
+  }),
 
-  authFail: (state, payload) => {
+  authFail: action((state, payload) => {
     state.error = payload;
     state.loading = false;
-  },
+  }),
 
-  authLogout: state => {
+  authLogout: action(state => {
     state.token = null;
     state.userId = null;
     clearTimeout(state.sessionTimeout);
-  },
+  }),
 
-  setAuthRedirectPath: (state, path) => {
+  setAuthRedirectPath: action((state, path) => {
     state.authRedirectPath = path;
-  },
+  }),
 
-  setSessionTimeout: (state, payload) => {
+  setSessionTimeout: action((state, payload) => {
     if (state.sessionTimeout) {
       clearTimeout(state.sessionTimeout);
     }
     state.sessionTimeout = payload;
-  },
+  }),
 
-  logout: effect(dispatch => {
+  logout: thunk(actions => {
     localStorage.removeItem('token');
     localStorage.removeItem('expirationDate');
     localStorage.removeItem('userId');
-    dispatch.auth.authLogout();
+    actions.authLogout();
   }),
 
-  checkAuthTimeout: effect((dispatch, payload) => {
+  checkAuthTimeout: thunk((actions, payload) => {
     const timeout = setTimeout(() => {
-      dispatch.auth.logout();
+      actions.logout();
     }, payload * 1000);
-    dispatch.auth.setSessionTimeout(timeout);
+    actions.setSessionTimeout(timeout);
   }),
 
-  authUser: effect(async (dispatch, { email, password, isSignup }) => {
-    dispatch.auth.authStart();
+  authUser: thunk(async (actions, { email, password, isSignup }) => {
+    actions.authStart();
 
     const authData = {
       email: email,
@@ -79,25 +79,25 @@ export default {
       localStorage.setItem('token', response.data.idToken);
       localStorage.setItem('expirationDate', expirationDate);
       localStorage.setItem('userId', response.data.localId);
-      dispatch.auth.authSuccess({ idToken: response.data.idToken, userId: response.data.localId });
-      dispatch.auth.checkAuthTimeout(response.data.expiresIn);
+      actions.authSuccess({ idToken: response.data.idToken, userId: response.data.localId });
+      actions.checkAuthTimeout(response.data.expiresIn);
     } catch (err) {
-      dispatch.auth.authFail(err.response.data.error);
+      actions.authFail(err.response.data.error);
     }
   }),
 
-  authCheckState: effect(dispatch => {
+  authCheckState: thunk(actions => {
     const token = localStorage.getItem('token');
     if (!token) {
-      dispatch.auth.logout();
+      actions.logout();
     } else {
       const expirationDate = new Date(localStorage.getItem('expirationDate'));
       if (expirationDate > new Date()) {
         const userId = localStorage.getItem('userId');
-        dispatch.auth.authSuccess({ idToken: token, userId });
-        dispatch.auth.checkAuthTimeout((expirationDate.getTime() - new Date().getTime()) / 1000);
+        actions.authSuccess({ idToken: token, userId });
+        actions.checkAuthTimeout((expirationDate.getTime() - new Date().getTime()) / 1000);
       } else {
-        dispatch.auth.logout();
+        actions.logout();
       }
     }
   })

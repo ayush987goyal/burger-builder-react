@@ -1,4 +1,4 @@
-import { effect } from 'easy-peasy';
+import { action, thunk } from 'easy-peasy';
 import axios from '../axios-orders';
 
 export default {
@@ -6,38 +6,38 @@ export default {
   loading: false,
   purchased: false,
   // actions
-  purchaseInit: (state, payload) => {
+  purchaseInit: action(state => {
     state.purchased = false;
-  },
+  }),
 
-  setLoading: (state, payload) => {
+  setLoading: action((state, payload) => {
     state.loading = payload;
-  },
+  }),
 
-  purchaseBurgerSuccess: (state, { orderId, orderData }) => {
+  purchaseBurgerSuccess: action((state, { orderId, orderData }) => {
     const newOrder = { ...orderData, id: orderId };
     state.loading = false;
     state.purchased = true;
     state.orders = state.orders.concat(newOrder);
-  },
+  }),
 
-  purchaseBurger: effect(async (dispatch, { token, orderData }) => {
-    dispatch.order.setLoading(true);
+  purchaseBurger: thunk(async (actions, { token, orderData }) => {
+    actions.setLoading(true);
     try {
       const response = await axios.post('/orders.json?auth=' + token, orderData);
-      dispatch.order.purchaseBurgerSuccess({ orderId: response.data.name, orderData });
+      actions.purchaseBurgerSuccess({ orderId: response.data.name, orderData });
     } catch (error) {
-      dispatch.order.setLoading(false);
+      actions.setLoading(false);
     }
   }),
 
-  fetchOrdersSuccess: (state, payload) => {
+  fetchOrdersSuccess: action((state, payload) => {
     state.loading = false;
     state.orders = payload;
-  },
+  }),
 
-  fetchOrders: effect(async (dispatch, { token, userId }) => {
-    dispatch.order.setLoading(true);
+  fetchOrders: thunk(async (actions, { token, userId }) => {
+    actions.setLoading(true);
     const queryparams = '?auth=' + token + '&orderBy="userId"&equalTo="' + userId + '"';
     try {
       const response = await axios.get('/orders.json' + queryparams);
@@ -48,9 +48,9 @@ export default {
           id: key
         });
       }
-      dispatch.order.fetchOrdersSuccess(fetchedOrders);
+      actions.fetchOrdersSuccess(fetchedOrders);
     } catch (error) {
-      dispatch.order.setLoading(false);
+      actions.setLoading(false);
     }
   })
 };
